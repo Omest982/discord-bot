@@ -20,6 +20,9 @@ dependencies {
 	implementation 'com.discord4j:discord4j-core:3.2.6'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
+
+	compileOnly 'org.projectlombok:lombok:1.18.32'
+	annotationProcessor 'org.projectlombok:lombok:1.18.32'
 }
 
 tasks.named('test') {
