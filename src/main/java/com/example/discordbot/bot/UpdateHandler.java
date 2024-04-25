@@ -1,5 +1,7 @@
-package com.example.discordbot.service;
+package com.example.discordbot.bot;
 
+import com.example.discordbot.service.CommandHandler;
+import com.example.discordbot.service.CommandService;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -25,11 +27,14 @@ public class UpdateHandler {
         onCommandReceived();
     }
 
+    //for usual text messages
     public void onMessageReceived(){
         discordClient.on(MessageCreateEvent.class,
                 event -> {
-                    System.out.println("Simple text message " + event.getMessage().getContent());
-                    if (event.getMessage().getContent().equalsIgnoreCase("!ping")) {
+                    String message = event.getMessage().getContent();
+                    log.info(String.format("Received simple text message  %s", message));
+
+                    if (message.equalsIgnoreCase("!ping")) {
                         return event.getMessage().getChannel()
                                 .flatMap(channel -> channel.createMessage("Pong!"))
                                 .then();
@@ -39,6 +44,7 @@ public class UpdateHandler {
         ).subscribe();
     }
 
+    //for slash commands
     public void onCommandReceived(){
         discordClient.on(ChatInputInteractionEvent.class,
                 event -> {
