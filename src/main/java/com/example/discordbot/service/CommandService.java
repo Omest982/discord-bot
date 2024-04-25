@@ -9,10 +9,6 @@ public interface CommandService {
 
     void registerNewCommands(GatewayDiscordClient client);
 
-    ApplicationCommandRequest deleteAllCommands();
-
-    ApplicationCommandRequest play();
-
     List<ApplicationCommandRequest> getAllCommands();
 
     List<String> getAllCommandsNames();

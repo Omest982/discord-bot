@@ -2,67 +2,43 @@ package com.example.discordbot.service.impl;
 
 
 import com.example.discordbot.service.CommandService;
+import com.example.discordbot.service.CommandStorage;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandData;
-import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.rest.service.ApplicationService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CommandServiceImpl implements CommandService {
-    @Override
-    public ApplicationCommandRequest deleteAllCommands() {
-        return ApplicationCommandRequest.builder()
-                .name("delete_commands")
-                .description("delete all commands")
-                .build();
-    }
+    private final CommandStorage commandStorage;
 
-    @Override
-    public ApplicationCommandRequest play() {
-        System.out.println("Started!");
-        return ApplicationCommandRequest.builder()
-                .name("play")
-                .description("plays")
-                .addOption(ApplicationCommandOptionData.builder()
-                        .name("query")
-                        .description("The search query")
-                        .type(ApplicationCommandOption.Type.STRING.getValue())
-                        .required(true)
-                        .build())
-                .build();
-    }
-
+    @Cacheable("allCommands")
     @Override
     public List<ApplicationCommandRequest> getAllCommands()  {
+        List<Method> allMethods = Arrays.stream(CommandStorage.class.getMethods()).toList();
 
-        Method[] allMethods = CommandServiceImpl.class.getMethods();
-
-        try {
-            System.out.println("invoking");
-            allMethods[0].invoke(this);
-            System.out.println("finished");
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-
-        return List.of(
-                play(),
-                deleteAllCommands()
-        );
+        return allMethods.stream()
+                .map(method -> {
+                    try {
+                        return (ApplicationCommandRequest) method.invoke(commandStorage);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toList());
     }
 
     @Override
